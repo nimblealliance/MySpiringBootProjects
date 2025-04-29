@@ -3,6 +3,7 @@ package com.nimblelearner.journalApp.Service;
 import com.nimblelearner.journalApp.Entity.JournalEntry;
 import com.nimblelearner.journalApp.Entity.User;
 import com.nimblelearner.journalApp.Repository.JournalEntryRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,17 +26,23 @@ public class JournalEntryService {
         return journalEntryRepository.findAll();
     }
 
+    public List<JournalEntry> getAllEntriesOfUserInJournal(String userName){
+        User user = userService.findByUserName(userName);
+        List<JournalEntry> allEntriesInJournal  = user.getJournalEntries();;
+        return allEntriesInJournal;
+    }
+
     public JournalEntry createEntryInJournal(JournalEntry journalEntry){
          journalEntryRepository.save(journalEntry);
          return journalEntry;
     }
 
-    public void createEntryInJournal(JournalEntry journalEntry, String userName){
-
+    @Transactional
+    public void createEntryInJournal(JournalEntry journalEntry, String userName   ){
         User user = userService.findByUserName(userName);
         JournalEntry saved = journalEntryRepository.save(journalEntry);
         user.getJournalEntries().add(saved);
-        userService.saveUser(user);
+        userService.saveUserEntry(user);
     }
 
     public JournalEntry getJournalEntryById(Long id){
@@ -51,6 +58,21 @@ public class JournalEntryService {
         return false;
     }
 
+    @Transactional
+    public Boolean deleteJournalEntryByUser(String userName , Long id){
+        User user = userService.findByUserName(userName);
+        if (user != null){
+            boolean removed = user.getJournalEntries().removeIf(x -> x.getId().equals(id));
+            if (removed){
+                userService.saveUserEntry(user);
+                journalEntryRepository.deleteById(id);
+                return true;
+            }
+        }
+        return false;
+
+    }
+
     public JournalEntry updateJournalEntryById( Long id,  JournalEntry newEntry){
         JournalEntry oldEntry = getJournalEntryById(id);
         if (oldEntry !=null){
@@ -60,6 +82,18 @@ public class JournalEntryService {
         }
         return oldEntry;
 
+    }
+
+    public JournalEntry updateJournalEntryByUser(String userName , Long id , JournalEntry newEntry){
+        JournalEntry oldEntry = getJournalEntryById(id);
+        User user = userService.findByUserName(userName);
+
+        if(oldEntry != null && user.getUserName().equals(userName)){
+            oldEntry.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().isEmpty() ? newEntry.getTitle() : oldEntry.getTitle());
+            oldEntry.setContent(newEntry.getContent() != null && !newEntry.getContent().isEmpty() ? newEntry.getContent() : oldEntry.getContent());
+            journalEntryRepository.save(oldEntry);
+        }
+        return oldEntry;
     }
 
 }

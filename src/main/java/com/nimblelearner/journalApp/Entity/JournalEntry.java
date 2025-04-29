@@ -29,6 +29,6 @@ public class JournalEntry {
 
     private String content;
 
-    private LocalDateTime time = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+    private LocalDateTime time = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
 }
