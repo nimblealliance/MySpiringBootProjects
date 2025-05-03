@@ -18,10 +18,4 @@ public class UserServiceTest {
         Assertions.assertNotNull(userRepository.findByUserName("ramenon"));
 
     }
-
-//    @Test
-//    public void testFindByParticularUserName(){
-//        Assertions.assertEquals(user , userRepository.findByUserName("boo"));
-//
-//    }
 }
